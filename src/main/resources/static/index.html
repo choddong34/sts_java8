@@ -44,13 +44,38 @@
       background-color: #0056b3;
     }
 
-    #result {
+    #progress-container {
       margin-top: 30px;
-      background-color: #eef1f5;
-      padding: 15px;
+    }
+
+    progress {
+      width: 100%;
+      height: 25px;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    #result {
+      margin-top: 15px;
+      padding: 10px;
       border-radius: 6px;
       white-space: pre-wrap;
       font-family: monospace;
+    }
+
+    .success {
+      background-color: #e6f7e6;
+      color: #2e7d32;
+    }
+
+    .error {
+      background-color: #fdecea;
+      color: #c62828;
+    }
+
+    .info {
+      background-color: #eef1f5;
+      color: #333;
     }
   </style>
 </head>
@@ -65,27 +90,72 @@
 
   <button onclick="sendRequest()">계산 요청 보내기</button>
 
-  <div id="result"></div>
+  <div id="progress-container" style="display: none;">
+    <label>진행률</label>
+    <progress id="progressBar" value="0" max="100"></progress>
+    <div id="progressText">0%</div>
+  </div>
+
+  <div id="result" class="info"></div>
 
   <script>
     function sendRequest() {
-      const officeCd = document.getElementById('officeCd').value;
-      const searchYm = document.getElementById('searchYm').value;
+      const officeCd = document.getElementById('officeCd').value.trim();
+      const searchYm = document.getElementById('searchYm').value.trim();
+      const key = officeCd + "_" + searchYm;
+
+      // 입력값 검사
+      if (!officeCd || !searchYm) {
+        showResult("사업소코드와 조회년월을 입력해주세요.", "error");
+        return;
+      }
 
       fetch('/api/calculate', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ officeCd, searchYm })
       })
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById('result').textContent = data;
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("서버 오류: " + response.status);
+        }
+        showResult("계산 시작됨. 진행률 수신 대기 중...", "info");
+        document.getElementById('progress-container').style.display = 'block';
+        listenProgress(key);
       })
       .catch(error => {
-        document.getElementById('result').textContent = '에러 발생: ' + error;
+        showResult("계산 요청 실패: " + error.message, "error");
+        document.getElementById('progress-container').style.display = 'none';
       });
+    }
+
+    function listenProgress(key) {
+      const eventSource = new EventSource('/api/progress/' + key);
+      const progressBar = document.getElementById('progressBar');
+      const progressText = document.getElementById('progressText');
+
+      eventSource.onmessage = function (event) {
+        const progress = parseInt(event.data);
+        progressBar.value = progress;
+        progressText.textContent = progress + '%';
+
+        if (progress >= 100) {
+          showResult("계산 완료!", "success");
+          eventSource.close();
+        }
+      };
+
+      eventSource.onerror = function () {
+        showResult("진행 중 오류가 발생했거나 서버 연결이 끊어졌습니다.", "error");
+        eventSource.close();
+        document.getElementById('progress-container').style.display = 'none';
+      };
+    }
+
+    function showResult(message, type) {
+      const resultDiv = document.getElementById('result');
+      resultDiv.textContent = message;
+      resultDiv.className = type;
     }
   </script>
 </body>

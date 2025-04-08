@@ -1,43 +1,71 @@
 package kr.re.kepri.pcm.main.controller;
 
+import kr.re.kepri.pcm.main.service.CalculationService;
 import kr.re.kepri.pcm.main.vo.CalculationVO;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.util.concurrent.CompletableFuture;
-
-/**
- * packageName    : kr.re.kepri.pcm.main.controller
- * fileName       : CalculationController
- * author         : dj
- * date           : 4/8/2025
- * description    :
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 4/8/2025        dj       최초 생성
- */
+import javax.annotation.Resource;
+import java.io.IOException;
+import java.util.concurrent.*;
 
 @RestController
 @RequestMapping("/api")
 public class CalculationController {
+
+    @Resource(name = "calculationService")
+    private CalculationService calculationService;
+
+    private final ExecutorService executor = Executors.newCachedThreadPool();
+
     @PostMapping("/calculate")
-    @Async
-    public CompletableFuture<String> calculateStrength(@RequestBody CalculationVO request) {
-        System.out.println("전주강도 계산 시작 (비동기)");
-        System.out.println("사업소코드: " + request.getOfficeCd());
-        System.out.println("조회년월: " + request.getSearchYm());
+    public String startCalculation(@RequestBody CalculationVO request) {
+        String key = getKey(request);
 
-        // 실제 계산 로직은 여기서 진행 예정
-        try {
-            Thread.sleep(1000); // 예시용 딜레이
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        executor.submit(() -> {
+            try {
+                for (int i = 1; i <= 100; i += 10) {
+                    calculationService.updateProgress(key, i);
+                    Thread.sleep(500); // 계산 진행 시뮬레이션
+                }
+                calculationService.updateProgress(key, 100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
 
-        return CompletableFuture.completedFuture("요청을 성공적으로 받았습니다. 전주강도 계산 완료 예정.");
+        return "계산 작업이 시작되었습니다.";
+    }
+
+    @GetMapping("/progress/{key}")
+    public SseEmitter getProgress(@PathVariable String key) {
+        SseEmitter emitter = new SseEmitter();
+
+        executor.submit(() -> {
+            try {
+                int lastProgress = 0;
+                while (lastProgress < 100) {
+                    int current = calculationService.getProgress(key);
+                    if (current != lastProgress) {
+                        emitter.send(SseEmitter.event().data(current));
+                        lastProgress = current;
+                    }
+                    Thread.sleep(300);
+                }
+                emitter.send(SseEmitter.event().data(100));
+                emitter.complete();
+                calculationService.removeProgress(key);
+            } catch (IOException | InterruptedException e) {
+                emitter.completeWithError(e);
+            }
+        });
+
+        return emitter;
+    }
+
+    private String getKey(CalculationVO req) {
+        return req.getOfficeCd() + "_" + req.getSearchYm();
     }
 }
