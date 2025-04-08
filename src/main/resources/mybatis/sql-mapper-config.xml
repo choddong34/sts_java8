@@ -11,5 +11,8 @@
         <!-- 공통 -->
         <typeAlias alias="resultMap" type="kr.re.kepri.pcm.common.util.ResultMap"/>
 
+        <!-- test -->
+        <typeAlias alias="calculationVO" type="kr.re.kepri.pcm.main.vo.CalculationVO" />
+
     </typeAliases>
 </configuration>

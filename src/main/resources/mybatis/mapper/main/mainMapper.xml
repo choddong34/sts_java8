@@ -2,4 +2,24 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.re.kepri.pcm.main.mapper.MainMapper">
 
+    <select id="selectTest" resultType="resultMap">
+        SELECT indx
+             , nm
+             , dt
+          FROM test
+    </select>
+
+    <insert id="insertTest" parameterType="calculationVO">
+        <selectKey keyProperty="officeCd" resultType="string" order="BEFORE">
+            SELECT NVL(MAX(INDX), 0) + 1 FROM test
+        </selectKey>
+        INSERT INTO test (
+            INDX, NM, DT
+        ) VALUES (
+            #{officeCd}
+            , #{searchYm}
+            , sysdate
+        )
+
+    </insert>
 </mapper>
