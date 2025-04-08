@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>전주강도 계산 요청</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f7f9fb;
+      padding: 50px;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    h2 {
+      color: #333;
+    }
+
+    label {
+      display: block;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    input {
+      padding: 10px;
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 5px;
+    }
+
+    button {
+      margin-top: 30px;
+      padding: 12px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #result {
+      margin-top: 30px;
+      background-color: #eef1f5;
+      padding: 15px;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <h2>전주강도 계산 요청</h2>
+
+  <label for="officeCd">사업소코드</label>
+  <input type="text" id="officeCd" placeholder="예: 1001">
+
+  <label for="searchYm">조회년월</label>
+  <input type="text" id="searchYm" placeholder="예: 202504">
+
+  <button onclick="sendRequest()">계산 요청 보내기</button>
+
+  <div id="result"></div>
+
+  <script>
+    function sendRequest() {
+      const officeCd = document.getElementById('officeCd').value;
+      const searchYm = document.getElementById('searchYm').value;
+
+      fetch('/api/calculate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ officeCd, searchYm })
+      })
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('result').textContent = data;
+      })
+      .catch(error => {
+        document.getElementById('result').textContent = '에러 발생: ' + error;
+      });
+    }
+  </script>
+</body>
+</html>
