@@ -3,7 +3,6 @@ package kr.re.kepri.pcm.config;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.annotation.MapperScan;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -26,8 +25,11 @@ import javax.sql.DataSource;
 @EnableTransactionManagement
 public class MainDataConfig {
 
-    @Autowired
-    private ApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
+
+    public MainDataConfig(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
     @Value("${spring.main.datasource.mapper-locations}")
     private String mapperLocation;
@@ -38,8 +40,7 @@ public class MainDataConfig {
     @Bean(name="mainDatasource")
     @ConfigurationProperties("spring.main.datasource")
     public DataSource mainDatasource() {
-        DataSource dataSource = DataSourceBuilder.create().build();
-        return dataSource;
+        return DataSourceBuilder.create().build();
     }
 
     @Bean(name="mainSqlSessionFactory")

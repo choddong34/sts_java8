@@ -1,10 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
+    <Properties>
+        <Property name="LOG_PATTERN">%d %5p [%c] %m%n</Property>
+    </Properties>
+
     <Appenders>
         <!-- Console 출력을 위한 Appender -->
         <Console name="console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d %5p [%c] %m%n" />
+            <PatternLayout pattern="${LOG_PATTERN}" />
         </Console>
+
+        <RollingFile name="file" fileName="/logs/app_server.log" filePattern="/logs/app_server_%d{yyyy-MM-dd}_%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="20MB"/>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+            <DefaultRolloverStrategy max="100" fileIndex="min">
+                <Delete basePath="/logs" maxDepth="1">
+                    <IfLastModified age="365d"/>
+                    <IfFileName glob="app_server_*.log.gz"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
     </Appenders>
     <Loggers>
         <Logger name="java.sql" level="OFF" additivity="false">
@@ -31,6 +49,7 @@
 
         <Root level="INFO">
             <AppenderRef ref="console" />
+            <AppenderRef ref="file" />
         </Root>
     </Loggers>
 </Configuration>
