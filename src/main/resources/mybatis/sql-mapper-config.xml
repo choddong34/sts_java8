@@ -11,6 +11,19 @@
         <!-- 공통 -->
         <typeAlias alias="resultMap" type="kr.re.kepri.pcm.common.util.ResultMap"/>
 
+        <!-- 전주강도계산 VO -->
+        <typeAlias alias="guyPwVO" type="kr.re.kepri.pcm.main.vo.GuyPwVO" />
+        <typeAlias alias="guyVO" type="kr.re.kepri.pcm.main.vo.GuyVO" />
+        <typeAlias alias="lsVO" type="kr.re.kepri.pcm.main.vo.LsVO" />
+        <typeAlias alias="mpVO" type="kr.re.kepri.pcm.main.vo.MpVO" />
+        <typeAlias alias="mrVO" type="kr.re.kepri.pcm.main.vo.MrVO" />
+        <typeAlias alias="msVO" type="kr.re.kepri.pcm.main.vo.MsVO" />
+        <typeAlias alias="mtVO" type="kr.re.kepri.pcm.main.vo.MtVO" />
+        <typeAlias alias="mwVO" type="kr.re.kepri.pcm.main.vo.MwVO" />
+        <typeAlias alias="myVO" type="kr.re.kepri.pcm.main.vo.MyVO" />
+        <typeAlias alias="poleInfoVO" type="kr.re.kepri.pcm.main.vo.PoleInfoVO" />
+        <typeAlias alias="safetyVO" type="kr.re.kepri.pcm.main.vo.SafetyVO" />
+
         <!-- test -->
         <typeAlias alias="calculationVO" type="kr.re.kepri.pcm.main.vo.CalculationVO" />
 
